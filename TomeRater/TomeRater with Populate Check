@@ -1,0 +1,223 @@
+class User():
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+        self.books = {}
+
+    def get_email(self):
+        print (self.email)
+
+    def change_email(self, new_email):
+        self.new_email = new_email
+        self.email = self.new_email
+        print("The email address has been changed to: {new_email}".format(new_email=self.new_email))
+
+    def __repr__(self):
+        return self.name + ", email: "+self.email+", books read: " + str(len(self.books))
+
+    def __eq__(self, other):
+        return self.name == other.name and self.email == other.email
+
+    def __hash__(self):
+        return hash((self.title, self.isbn))
+
+    def read_book(self, book, rating=None):
+        self.books[book] = rating
+
+    def get_average_rating(self):
+        if self.books == {}:
+            return "No books have been reviewed by this user yet."
+        else:
+            total = 0
+            for i in self.books.values():
+                if i:
+                    total += i
+            avg = i/len(self.books)
+            return avg
+
+
+class Book:
+
+    def __init__(self, title, isbn):
+        self.title = title
+        self.isbn = isbn
+        self.ratings = []
+
+    def __repr__(self):
+        return "Book: {book_title}, ISBN: {isbn_number}".format(book_title=self.title, isbn_number=self.isbn)
+
+    def get_title(self):
+        return "The title of the book is {title}".format(title=self.title)
+
+    def get_isbn(self):
+        return "The isbn of the book is {isbn}".format(isbn=self.isbn)
+
+    def set_isbn(self, new_isbn):
+        self.new_isbn = new_isbn
+        self.isbn = self.new_isbn
+        print("The ISBN number has been changed to: {new_isbn}".format(new_isbn=self.new_isbn))
+
+    def add_rating(self, rating):
+        self.rating = rating
+        if rating and rating > 0 and rating <= 4:
+            self.ratings.append(rating)
+        return rating
+
+    def get_avg_rating(self):
+        total = 0
+        if self.ratings == []:
+            return 0
+        else:
+            for i in self.ratings:
+                total += i
+        average = total / len(self.ratings)
+        return average
+
+
+class Fiction(Book):
+
+    def __init__(self, title, isbn, author):
+        super().__init__(title, isbn)
+        self.author = author
+
+    def __repr__(self):
+        return "{title} by {author}".format(title=self.title, author=self.author)
+
+    def get_author(self):
+        return "The author is {author}".format(author=self.author)
+
+
+class Non_Fiction(Book):
+
+    def __init__(self, title, isbn, subject, level):
+        super().__init__(title, isbn)
+        self.subject = subject
+        self.level = level
+
+    def __repr__(self):
+        #if self.level[0] == "a" or "e" or "i" or "u":  #### Yields type error: 'int' object is not subscriptable ####
+            return "{title}, an {level} manual on {subject}".format(title=self.title, level=self.level, subject=self.subject)
+        #else:
+            #return "{title}, a {level} manual on {subject}".format(title=self.title, level=self.level, subject=self.subject)
+
+    def get_subject(self):
+        return "The subject matter is: {subject}".format(subject=self.subject)
+
+    def get_level(self):
+        return "The reading level is: {level}".format(level=self.level)
+
+
+class TomeRater:
+
+    def __init__(self):
+        self.users = {}
+        self.books = {}
+
+    def create_book(self, title, isbn):
+        new_book = Book(title, isbn)
+        return new_book
+
+    def create_novel(self, title, author, isbn):
+        new_fiction = Fiction(title, author, isbn)
+        return new_fiction
+
+    def create_non_fiction(self, title, subject, level, isbn):
+        new_non_fiction = Non_Fiction(title, subject, level, isbn)
+        return new_non_fiction
+
+    def add_user(self, name, email, user_books=None):
+        new_user = User(name, email)
+        self.users[email] = new_user
+        if user_books:
+            for i in user_books:
+                self.add_book_to_user(i, email)
+
+    def add_book_to_user(self, book, email, rating=None):
+        user = self.users.get(email, None)
+        if user:
+           print("User found and book added.")
+           user.read_book(book, rating)
+           if book not in self.books:
+               self.books[book] = 0
+           self.books[book] += 1
+           book.add_rating(rating)
+        else:
+            print("There is no user that matches {email}.".format(email=email))
+
+    def print_catalog(self):
+        for i in self.books:
+            print(i)
+
+    def print_users(self):
+        for i in self.users:
+            print(i)
+
+    def print_user_values(self):
+        for i in self.users.values():
+            print (i)
+
+    def print_book_values(self):
+        for i in self.books.values():
+            print(i)
+
+    def get_most_read_book(self):
+        most_readings = float("-inf")
+        book_most_read = None
+        for key, value in self.books.items():
+            if value > most_readings:
+                most_readings = value
+                book_most_read = key
+        return str(book_most_read) + " with was read a total of " + str(most_readings) + " times."
+
+    def highest_rated_book(self):
+        top_rated = float("-inf")
+        top_rated_book = None
+        for i in self.books:
+            avg = i.get_avg_rating()
+            if avg > top_rated:
+                top_rated = avg
+                top_rated_book = i
+
+        return str(top_rated_book) + " with a rating of: " + str(top_rated_book.get_avg_rating())
+
+    def most_positive_user(self):
+        top_rating = float("-inf")
+        top_rater = None
+        for i in self.users.values():
+            avg = i.get_average_rating()
+            if avg > top_rating:
+                top_rating = avg
+                top_rater = i
+        return str(top_rater) + " with an average rating of: " + str(top_rater.get_average_rating())
+
+Tome_Rater = TomeRater()
+#Create some books:
+book1 = Tome_Rater.create_book("Society of Mind", 12345678)
+novel1 = Tome_Rater.create_novel("Alice In Wonderland", "Lewis Carroll", 12345)
+novel1.set_isbn(9781536831139)
+nonfiction1 = Tome_Rater.create_non_fiction("Automate the Boring Stuff", "Python", "beginner", 1929452)
+nonfiction2 = Tome_Rater.create_non_fiction("Computing Machinery and Intelligence", "AI", "advanced", 11111938)
+novel2 = Tome_Rater.create_novel("The Diamond Age", "Neal Stephenson", 10101010)
+novel3 = Tome_Rater.create_novel("There Will Come Soft Rains", "Ray Bradbury", 10001000)
+#Create users:
+Tome_Rater.add_user("Alan Turing", "alan@turing.com")
+Tome_Rater.add_user("David Marr", "david@computation.org")
+#Add a user with three books already read:
+Tome_Rater.add_user("Marvin Minsky", "marvin@mit.edu", user_books=[book1, novel1, nonfiction1])
+#Add books to a user one by one, with ratings:
+Tome_Rater.add_book_to_user(book1, "alan@turing.com", 1)
+Tome_Rater.add_book_to_user(novel1, "alan@turing.com", 3)
+Tome_Rater.add_book_to_user(nonfiction1, "alan@turing.com", 3)
+Tome_Rater.add_book_to_user(nonfiction2, "alan@turing.com", 4)
+Tome_Rater.add_book_to_user(novel3, "alan@turing.com", 1)
+Tome_Rater.add_book_to_user(novel2, "marvin@mit.edu", 2)
+Tome_Rater.add_book_to_user(novel3, "marvin@mit.edu", 2)
+Tome_Rater.add_book_to_user(novel3, "david@computation.org", 4)
+Tome_Rater.print_catalog()
+Tome_Rater.print_users()
+print("Most positive user:")
+print(Tome_Rater.most_positive_user())
+print("Highest rated book:")
+print(Tome_Rater.highest_rated_book())
+print("Most read book:")
+print(Tome_Rater.get_most_read_book())
